@@ -3,4 +3,12 @@ src = "src"
 out = "out"
 libs = ["lib"]
 
+remappings = [
+    '@ajna-core/=lib/ajna-core/src/',
+    '@ajna-core-test/=lib/ajna-core/tests/forge',
+    '@openzeppelin/contracts=lib/ajna-core/lib/openzeppelin-contracts/contracts',
+    '@prb-math/contracts=lib/ajna-core/lib/prb-math/contracts',
+    'src/=src/'
+]
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
