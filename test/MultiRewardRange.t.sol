@@ -30,11 +30,11 @@ contract MultiRewardRangeTest is IMultiRewardRangeEvents, MultiRewardRangeTestHe
     uint256 internal _p9_62     = 9.624807173121239337 * 1e18;
     uint256 internal _p9_52     = 9.529276179422528643 * 1e18;
 
-    uint256 internal _i9_91     = 3696;
-    uint256 internal _i9_81     = 3698;
-    uint256 internal _i9_72     = 3700;
-    uint256 internal _i9_62     = 3702;
-    uint256 internal _i9_52     = 3704;
+    uint16 internal _i9_91     = 3696;
+    uint16 internal _i9_81     = 3698;
+    uint16 internal _i9_72     = 3700;
+    uint16 internal _i9_62     = 3702;
+    uint16 internal _i9_52     = 3704;
 
     function setUp() external {
         vm.startPrank(address(this));

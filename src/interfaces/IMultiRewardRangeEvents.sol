@@ -13,6 +13,6 @@ interface IMultiRewardRangeEvents {
     event RewardAdded(uint256 reward);
     event Recovered(address tokenAddress, uint256 tokenAmount);
     event RewardsDurationUpdated(address _rewardsToken, uint256 newDuration);
-    event RangeExpanded(uint256 lowerBound, uint256 upperBound);
+    event RangeExpanded(uint16 lowerBound, uint16 upperBound);
 
 }

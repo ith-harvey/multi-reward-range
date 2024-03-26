@@ -5,7 +5,7 @@ pragma solidity 0.8.18;
 interface IMultiRewardRange {
     // External functions
     function addReward(address rewardsToken_, address rewardsDistributor_, uint256 rewardsDuration_) external;
-    function expandRewardRange(uint256 lowerBound_, uint256 upperBound_) external;
+    function expandRewardRange(uint16 lowerBound_, uint16 upperBound_) external;
     function notifyRewardAmount(address rewardsToken_, uint256 reward_) external;
     function recoverERC20(address tokenAddress_, uint256 tokenAmount_) external;
     function setRewardsDuration(address rewardsToken_, uint256 rewardsDuration_) external;
@@ -14,12 +14,14 @@ interface IMultiRewardRange {
     function unstake(uint256 tokenId_) external;
     function getReward(uint256 tokenId_) external;
     function exit(uint256 tokenId_) external;
+    function totalSupply() external view returns (uint256);
     function getStakeInfo(uint256 tokenId_) external view returns (address, uint256, uint256);
     function earned(uint256 tokenId_, address rewardsToken_) external view returns (uint256);
     function rewardPerToken(address rewardsToken_) external view returns (uint256);
     function lastTimeRewardApplicable(address rewardsToken_) external view returns (uint256);
     function getRewardForDuration(address rewardsToken_) external view returns (uint256);
     function getStakeRewardsInfo(uint256 tokenId_, address rewardsToken_) external view returns (uint256, uint256);
+    function getRewardRange() external view returns (uint16, uint16);
 
         /**
      *  @notice User attempted to claim rewards multiple times.
