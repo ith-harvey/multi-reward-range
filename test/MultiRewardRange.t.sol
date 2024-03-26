@@ -4,8 +4,11 @@ pragma solidity 0.8.18;
 import '@ajna-core/PoolInfoUtils.sol';
 import 'src/MultiRewardRange.sol';
 
+import { IERC20Pool } from '@ajna-core/interfaces/pool/erc20/IERC20Pool.sol';
 import { MultiRewardRangeTestHelperContract } from './MultiRewardRangeUtils.sol';
 import { IMultiRewardRangeEvents } from 'src/interfaces/IMultiRewardRangeEvents.sol';
+
+import '@std/console2.sol';
 
 contract MultiRewardRangeTest is IMultiRewardRangeEvents, MultiRewardRangeTestHelperContract {
 
@@ -36,29 +39,9 @@ contract MultiRewardRangeTest is IMultiRewardRangeEvents, MultiRewardRangeTestHe
     function setUp() external {
         vm.startPrank(address(this));
 
-        // borrowers
-        _borrower = makeAddr("borrower");
-        _borrower2 = makeAddr("borrower2");
-        _borrower3 = makeAddr("borrower3");
-
-        _lender = makeAddr("lender");
-        _lender1 = makeAddr("lender1");
-
         // instantiate test minters
         _minterOne   = makeAddr("minterOne");
         _minterTwo   = makeAddr("minterTwo");
-
-        _mintCollateralAndApproveTokens(_borrower,  1_000 * 1e18);
-        _mintQuoteAndApproveTokens(_borrower,   200_000 * 1e18);
-
-        _mintCollateralAndApproveTokens(_borrower2,  1_000 * 1e18);
-        _mintQuoteAndApproveTokens(_borrower2,   200_000 * 1e18);
-
-        _mintCollateralAndApproveTokens(_borrower3,  1_000 * 1e18);
-        _mintQuoteAndApproveTokens(_borrower3,   200_000 * 1e18);
-
-        _mintQuoteAndApproveTokens(_lender,   200_000 * 1e18);
-        _mintQuoteAndApproveTokens(_lender1,  200_000 * 1e18);
 
         _mintQuoteAndApproveTokens(_minterOne,  500_000_000 * 1e18);
         _mintQuoteAndApproveTokens(_minterTwo,  500_000_000 * 1e18);
@@ -188,6 +171,7 @@ contract MultiRewardRangeTest is IMultiRewardRangeEvents, MultiRewardRangeTestHe
             rewardAmounts:  rewardAmounts
         });
     }
+
 
     function testExitMultipleStakers() external {
 
@@ -431,6 +415,172 @@ contract MultiRewardRangeTest is IMultiRewardRangeEvents, MultiRewardRangeTestHe
         });
     }
 
+    function testExitTokenAboveMPValueExtractorNoRewards() external {
+
+        // configure NFT position one
+        uint256[] memory depositIndexes = new uint256[](4);
+        depositIndexes[0] = _i9_52;
+        depositIndexes[1] = _i9_62;
+        depositIndexes[2] = _i9_72;
+        depositIndexes[3] = _i9_81;
+
+        uint256 tokenIdOne = _mintAndMemorializePositionNFT({
+            indexes:    depositIndexes,
+            minter:     _minterOne,
+            mintAmount: 1_000 * 1e18,
+            pool:       address(_pool)
+        });
+
+        deal(address(_shitTokenOne), _owner, 500 * 1e18);
+        _distributeRewards({
+            owner:           _owner,
+            distributor:     _owner,
+            rewardsToken:    address(_shitTokenOne),
+            rewardsAmount:   500 * 1e18,
+            rewardsDuration: 500 days 
+        });
+
+        // should revert if not an Ajna pool
+        _stakeToken({
+            pool:    address(_pool),
+            owner:   _minterOne,
+            tokenId: tokenIdOne
+        });
+
+        skip(10 days);
+
+        // configure collateral only position
+        uint256[] memory depositIndexes2 = new uint256[](1);
+        depositIndexes2[0] = _i9_91;
+
+        changePrank(_minterTwo);
+        deal(address(_collateral), _minterTwo, 1_000.0 * 1e18);
+        _collateral.approve(address(_pool), type(uint256).max);
+        uint256 tokenId_ = _positionManager.mint(address(_pool), _minterTwo, keccak256("ERC20_NON_SUBSET_HASH"));
+
+        uint256[] memory lpBal = new uint256[](1);
+        lpBal[0] = IERC20Pool(address(_pool)).addCollateral(1_000.0 * 1e18, _i9_91, type(uint256).max);
+        assertEq(lpBal[0], 9_917.184843435912074000 * 1e18);
+
+        _pool.increaseLPAllowance(address(_positionManager), depositIndexes2, lpBal);
+        _positionManager.memorializePositions(address(_pool), tokenId_, depositIndexes2);
+
+        // the collateral only staker does not receive rewards since there is no deposit in the bucket, on stake.
+        _stakeToken({
+            pool:    address(_pool),
+            owner:   _minterTwo,
+            tokenId: tokenId_
+        });
+
+        skip(10 days);
+
+        address[] memory rewardTokens = new address[](1);
+        rewardTokens[0] = address(_shitTokenOne);
+
+        uint256[] memory rewardAmounts = new uint256[](1);
+        rewardAmounts[0] = 19.999999999999871999 * 1e18;
+
+        // claim rewards accrued since deposit
+        _exit({
+            pool:           address(_pool),
+            from:           _minterOne,
+            tokenId:        tokenIdOne,
+            rewardTokens:   rewardTokens,
+            rewardAmounts:  rewardAmounts
+        });
+        
+        // proof of no rewards earned
+        assertEq(_rewardsManager.earned(tokenId_, address(_shitTokenOne)), 0);
+        rewardAmounts[0] = 0;
+
+        // claim rewards accrued since deposit
+        _exit({
+            pool:           address(_pool),
+            from:           _minterTwo,
+            tokenId:        tokenId_,
+            rewardTokens:   rewardTokens,
+            rewardAmounts:  rewardAmounts
+        });
+    }
+
+    function testExitBelowMPValueExtractorRewards() external {
+
+        assertEq(_priceAt(4000), 2.177236638543800931 * 1e18);
+
+        vm.startPrank(_owner);
+        _rewardsManager = new MultiRewardRange(_owner, _pool, _positionManager,_i9_91, 4_000);
+        vm.stopPrank();
+
+        uint256[] memory depositIndexes = new uint256[](1);
+        depositIndexes[0] = 4000;
+
+        uint256 tokenIdOne = _mintAndMemorializePositionNFT({
+            indexes:    depositIndexes,
+            minter:     _minterOne,
+            mintAmount: 1_000 * 1e18,
+            pool:       address(_pool)
+        });
+
+        deal(address(_shitTokenOne), _owner, 500 * 1e18);
+        _distributeRewards({
+            owner:           _owner,
+            distributor:     _owner,
+            rewardsToken:    address(_shitTokenOne),
+            rewardsAmount:   500 * 1e18,
+            rewardsDuration: 500 days 
+        });
+
+        // should revert if not an Ajna pool
+        _stakeToken({
+            pool:    address(_pool),
+            owner:   _minterOne,
+            tokenId: tokenIdOne
+        });
+
+        skip(10 days);
+
+        // proof of rewards earned freeriding
+        assertEq(_rewardsManager.earned(tokenIdOne, address(_shitTokenOne)), 9.999999999999935999 * 1e18);
+
+        address[] memory rewardTokens = new address[](1);
+        rewardTokens[0] = address(_shitTokenOne);
+
+        uint256[] memory rewardAmounts = new uint256[](1);
+        rewardAmounts[0] = 9.999999999999935999 * 1e18;
+
+        _getRewards({
+            from:           _minterOne,
+            tokenId:        tokenIdOne,
+            rewardTokens:   rewardTokens,
+            rewardAmounts:  rewardAmounts
+        });
+
+        assertEq(_rewardsManager.earned(tokenIdOne, address(_shitTokenOne)), 0);
+
+        uint256[] memory depositIndexes2 = new uint256[](1);
+        depositIndexes2[0] = _i9_91;
+
+        uint256 tokenIdTwo = _mintAndMemorializePositionNFT({
+            indexes:    depositIndexes2,
+            minter:     _minterTwo,
+            mintAmount: 1_000 * 1e18,
+            pool:       address(_pool)
+        });
+
+        // should revert if not an Ajna pool
+        _stakeToken({
+            pool:    address(_pool),
+            owner:   _minterTwo,
+            tokenId: tokenIdTwo
+        });
+
+        skip(10 days);
+
+        // proof of diminishing rewards if counter balanced by higher priced stakers
+        assertEq(_rewardsManager.earned(tokenIdOne, address(_shitTokenOne)), 0.459810255514809931 * 1e18);
+        assertEq(_rewardsManager.earned(tokenIdTwo, address(_shitTokenOne)), 9.540189744485126068 * 1e18);
+    }
+
     function testRecoverERC20() external {
         deal(address(_shitTokenOne), address(_rewardsManager), 500 * 1e18);
 
@@ -503,6 +653,53 @@ contract MultiRewardRangeTest is IMultiRewardRangeEvents, MultiRewardRangeTestHe
             pool:    address(_pool),
             owner:   _minterOne,
             tokenId: tokenIdOne
+        });
+
+        skip(10 days);
+
+        assertEq(_rewardsManager.earned(tokenIdOne, address(_shitTokenOne)), 9.999999999999935999 * 1e18);
+
+        // stake NFT position two
+        uint256 tokenIdTwo = _mintAndMemorializePositionNFT({
+            indexes:    depositIndexes2,
+            minter:     _minterOne,
+            mintAmount: 2_000 * 1e18,
+            pool:       address(_pool)
+        });
+
+        _stakeToken({
+            pool:    address(_pool),
+            owner:   _minterOne,
+            tokenId: tokenIdTwo
+        });
+
+        skip(10 days);
+        
+        // claim rewards accrued since deposit
+
+        address[] memory rewardTokens = new address[](1);
+        rewardTokens[0] = address(_shitTokenOne);
+
+        uint256[] memory rewardAmounts = new uint256[](1);
+        rewardAmounts[0] = 14.950118570610747397 * 1e18;
+
+        _exit({
+            pool:           address(_pool),
+            from:           _minterOne,
+            tokenId:        tokenIdOne,
+            rewardTokens:   rewardTokens,
+            rewardAmounts:  rewardAmounts
+        });
+
+        rewardAmounts[0] = 5.049881429389124602 * 1e18;
+
+        // claim rewards accrued since deposit
+        _exit({
+            pool:           address(_pool),
+            from:           _minterOne,
+            tokenId:        tokenIdTwo,
+            rewardTokens:   rewardTokens,
+            rewardAmounts:  rewardAmounts
         });
     }
 }

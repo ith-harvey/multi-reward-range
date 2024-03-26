@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.18;
 
@@ -299,8 +299,8 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
                                             Maths.wmul(price, price),
                                             qtValue
                                         ).div(1e18);
-
-            totalSupply  = totalSupply.add(priceWeightedLPs);
+ 
+            totalSupply   = totalSupply.add(priceWeightedLPs);
             stakeInfo.lps = stakeInfo.lps.add(priceWeightedLPs);
  
             unchecked { ++i; } // bounded by array length
