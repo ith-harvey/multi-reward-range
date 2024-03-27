@@ -47,9 +47,9 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     struct Reward {
-        address rewardsDistributor;
-        uint256 rewardsDuration;
-        uint256 periodFinish;         // period in which rewards are distributed
+        address rewardsDistributor;   // address of the rewards distributor
+        uint256 rewardsDuration;      // the duration periodFinish is increased by when rewards are added
+        uint256 periodFinish;         // active rewards distribution period
         uint256 rewardRate;           // reward rate for the pool
         uint256 lastUpdateTime;       // last time reward was updated for the pool
         uint256 rewardPerTokenStored; // reward per token stored for the pool
