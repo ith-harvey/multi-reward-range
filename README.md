@@ -105,3 +105,6 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+## credit where credit is due
+Reused code from the SNX [MultiRewards.sol contract](https://github.com/curvefi/multi-rewards/blob/master/contracts/MultiRewards.sol)
