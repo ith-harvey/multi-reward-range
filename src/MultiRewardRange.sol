@@ -252,7 +252,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     */
     function stake(
         uint256 tokenId_
-    ) external override nonReentrant whenNotPaused updateReward(tokenId_) {
+    ) external nonReentrant whenNotPaused updateReward(tokenId_) {
 
         // check that tokenId is a valid LP NFT
         require(address(ajnaPool) == positionManager.poolKey(tokenId_));
@@ -305,7 +305,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     */
     function unstake(
         uint256 tokenId_
-    ) public override nonReentrant updateReward(tokenId_) {
+    ) public nonReentrant updateReward(tokenId_) {
         StakeInfo storage stakeInfo = _stakes[tokenId_];
 
         if (msg.sender != stakeInfo.owner) revert NotOwnerOfDeposit();
@@ -327,7 +327,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     */
     function getReward(
         uint256 tokenId_
-    ) public override nonReentrant updateReward(tokenId_) {
+    ) public nonReentrant updateReward(tokenId_) {
 
         StakeInfo storage stakeInfo = _stakes[tokenId_];
         if (msg.sender != stakeInfo.owner) revert NotOwnerOfDeposit();
@@ -350,7 +350,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     */
     function exit(
         uint256 tokenId_
-    ) external override {
+    ) external {
         getReward(tokenId_);
         unstake(tokenId_);
     }
@@ -363,7 +363,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     /**
      *  @inheritdoc IMultiRewardRange
     */
-    function totalSupply() external view override returns (uint256) {
+    function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
 
@@ -426,7 +426,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     */
     function lastTimeRewardApplicable(
         address rewardsToken_
-    ) public view override returns (uint256) {
+    ) public view returns (uint256) {
         return
             Math.min(block.timestamp, rewardData[rewardsToken_].periodFinish);
     }
@@ -436,7 +436,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     */
     function getRewardForDuration(
         address rewardsToken_
-    ) external view override returns (uint256) {
+    ) external view returns (uint256) {
         return
             rewardData[rewardsToken_].rewardRate.mul(
                 rewardData[rewardsToken_].rewardsDuration
@@ -449,7 +449,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     function getStakeRewardsInfo(
         uint256 tokenId_,
         address rewardsToken_
-    ) external view override returns (uint256, uint256) {
+    ) external view returns (uint256, uint256) {
         return (
             _stakes[tokenId_].rewards[rewardsToken_].owed,
             _stakes[tokenId_].rewards[rewardsToken_].userRewardPerTokenStoredPaid
