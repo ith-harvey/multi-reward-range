@@ -49,10 +49,10 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     struct Reward {
         address rewardsDistributor;
         uint256 rewardsDuration;
-        uint256 periodFinish;
-        uint256 rewardRate;
-        uint256 lastUpdateTime;
-        uint256 rewardPerTokenStored;
+        uint256 periodFinish;         // period in which rewards are distributed
+        uint256 rewardRate;           // reward rate for the pool
+        uint256 lastUpdateTime;       // last time reward was updated for the pool
+        uint256 rewardPerTokenStored; // reward per token stored for the pool
     }
 
     /***********************/
@@ -173,8 +173,8 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
             address(this),
             reward_
         );
-
         if (block.timestamp >= rewardData[rewardsToken_].periodFinish) {
+            // rewards period inactive, set new reward rate
             rewardData[rewardsToken_].rewardRate = reward_.div(
                 rewardData[rewardsToken_].rewardsDuration
             );
@@ -185,6 +185,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
             uint256 leftover = remaining.mul(
                 rewardData[rewardsToken_].rewardRate
             );
+            // rewards period is active, add reward to current rate
             rewardData[rewardsToken_].rewardRate = reward_.add(leftover).div(
                 rewardData[rewardsToken_].rewardsDuration
             );
@@ -278,7 +279,10 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
             uint256 qtValue = poolUtils.lpToQuoteTokens(address(ajnaPool), lps, bucketId);
             uint256 price   = poolUtils.indexToPrice(bucketId);
 
-            // price^2 * lps
+            // price weighted values inscentivize stakers to stake at higher prices
+            // lp to quote token values ensure the LPs value based on the buckets deposit upon staking
+
+            // price^2 * lpToQTValue
             uint256 priceWeightedLPs = Maths.wmul(
                                             Maths.wmul(price, price),
                                             qtValue
@@ -375,7 +379,6 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
             _stakes[tokenId_].lps
         );
     }
-
 
     /**
      *  @inheritdoc IMultiRewardRange

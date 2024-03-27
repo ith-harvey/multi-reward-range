@@ -28,6 +28,7 @@ interface IMultiRewardRange {
 
     /**
      * @notice Recover ERC20 tokens sent to this contract by mistake
+     * @dev cannot withdraw a rewards token
      * @param tokenAddress_ Address of the token to recover
      * @param tokenAmount_  Amount of tokens to recover
     */
