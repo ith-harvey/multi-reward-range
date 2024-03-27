@@ -121,10 +121,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Add a new reward token to the contract
-     * @param rewardsToken_       Address of the reward token
-     * @param rewardsDistributor_ Address of the rewards distributor
-     * @param rewardsDuration_    Duration of the rewards period
+     *  @inheritdoc IMultiRewardRange
     */
     function addReward(
         address rewardsToken_,
@@ -138,10 +135,8 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Expand the reward range 
-     * @param lowerBound_ lower bound, the higher price of the reward range
-     * @param upperBound_ upper bound, the lower price of the reward range
-     */
+     *  @inheritdoc IMultiRewardRange
+    */
     function expandRewardRange(
         uint16 lowerBound_,
         uint16 upperBound_
@@ -164,9 +159,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     /**************************/
 
     /**
-     * @notice Notify reward amount for a specific reward token
-     * @param rewardsToken_ Address of the reward token
-     * @param reward_       Amount of reward to be given
+     *  @inheritdoc IMultiRewardRange
     */
     function notifyRewardAmount(
         address rewardsToken_,
@@ -205,9 +198,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Recover ERC20 tokens sent to this contract by mistake
-     * @param tokenAddress_ Address of the token to recover
-     * @param tokenAmount_  Amount of tokens to recover
+     *  @inheritdoc IMultiRewardRange
     */
     function recoverERC20(
         address tokenAddress_,
@@ -221,6 +212,9 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
         emit Recovered(tokenAddress_, tokenAmount_);
     }
 
+    /**
+     *  @inheritdoc IMultiRewardRange
+    */
     function setRewardsDuration(
         address rewardsToken_,
         uint256 rewardsDuration_
@@ -239,9 +233,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Set rewards distributor for a specific reward token 
-     * @param rewardsToken_       Address of the reward token
-     * @param rewardsDistributor_ Address of the new rewards distributor
+     *  @inheritdoc IMultiRewardRange
     */
     function setRewardsDistributor(
         address rewardsToken_,
@@ -255,8 +247,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     /**************************/
 
     /**
-     * @notice Stake a ERC20 LP NFT to earn rewards
-     * @param tokenId_ ID of the NFT
+     *  @inheritdoc IMultiRewardRange
     */
     function stake(
         uint256 tokenId_
@@ -306,8 +297,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Unstake a ERC20 LP NFT, not withdrawing rewards
-     * @param tokenId_ ID of the NFT
+     *  @inheritdoc IMultiRewardRange
     */
     function unstake(
         uint256 tokenId_
@@ -329,8 +319,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Collect staking rewards of all reward tokens
-     * @param tokenId_ ID of the NFT
+     *  @inheritdoc IMultiRewardRange
     */
     function getReward(
         uint256 tokenId_
@@ -353,8 +342,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Exit staking and claim rewards
-     * @param tokenId_ ID of the NFT
+     *  @inheritdoc IMultiRewardRange
     */
     function exit(
         uint256 tokenId_
@@ -369,19 +357,14 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     /********************/
 
     /**
-     * @notice Get total LP accross all positions
-     * @return _totalSupply LP accross all positions in the staking contract
+     *  @inheritdoc IMultiRewardRange
     */
     function totalSupply() external view override returns (uint256) {
         return _totalSupply;
     }
 
     /**
-     * @notice Get the stakeInfo for a LP NFT token
-     * @param tokenId_ ID of the NFT
-     * @return owner owner of the LP NFT
-     * @return lastUpdated timestamp of last time staking position was updated
-     * @return lps total LP associated with this LP NFT
+     *  @inheritdoc IMultiRewardRange
     */
     function getStakeInfo(
         uint256 tokenId_
@@ -393,12 +376,10 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
         );
     }
 
+
     /**
-     * @notice Calculates earned token rewards associated with the staked LP NFT
-     * @param tokenId_      ID of the staked LP token  
-     * @param rewardsToken_ Address of the reward token
-     * @return earned rewards amount
-    */ 
+     *  @inheritdoc IMultiRewardRange
+    */
     function earned(
         uint256 tokenId_,
         address rewardsToken_
@@ -418,9 +399,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Get the reward per staked token
-     * @param rewardsToken_ Address of the reward token
-     * @return Reward per staked token
+     *  @inheritdoc IMultiRewardRange
     */
     function rewardPerToken(
         address rewardsToken_
@@ -440,9 +419,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Get the last time reward is applicable
-     * @param rewardsToken_ Address of the reward token 
-     * @return lastTimeRewardApplicable timestamp of last time reward is applicable
+     *  @inheritdoc IMultiRewardRange
     */
     function lastTimeRewardApplicable(
         address rewardsToken_
@@ -452,9 +429,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Get the last time reward is applicable
-     * @param rewardsToken_ Address of the reward token 
-     * @return lastTimeRewardApplicable timestamp of last time reward is applicable
+     *  @inheritdoc IMultiRewardRange
     */
     function getRewardForDuration(
         address rewardsToken_
@@ -466,10 +441,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Get stake rewards info for a token ID and reward token
-     * @param tokenId_      ID of the staked LP token
-     * @param rewardsToken_ Address of the reward token
-     * @return owed rewards amount, userRewardPerTokenStoredPaid  
+     *  @inheritdoc IMultiRewardRange
     */
     function getStakeRewardsInfo(
         uint256 tokenId_,
@@ -482,9 +454,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
     }
 
     /**
-     * @notice Get stake reward range for the contract
-     * @return upperBound upperBound, lower price of the reward range
-     * @return lowerBound lowerBound, higher price of the reward range
+     *  @inheritdoc IMultiRewardRange
     */
     function getRewardRange() external view returns (uint16, uint16) {
         return (upperBound, lowerBound);
@@ -496,7 +466,7 @@ contract MultiRewardRange is IMultiRewardRange, IMultiRewardRangeEvents, Reentra
 
     /**
      * @notice update reward values for all stakers and in some cases an individual staker
-     * @param tokenId_      ID of the staked LP token
+     * @param tokenId_ ID of the staked LP token
     */
     modifier updateReward(uint256 tokenId_) {
         StakeInfo storage stakeInfo = _stakes[tokenId_];
